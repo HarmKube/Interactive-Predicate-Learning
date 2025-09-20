@@ -1,20 +1,22 @@
 from retry import retry
 from pathlib import Path
 from predicate_learning.utils.io_util import load_json
-import openai
+#import openai
 import abc
 import logging
+import ollama
+import json
 
-
-openai_key_folder = Path(__file__).resolve().parent.parent.parent / "openai_keys"
-OPENAI_KEYS = load_json(openai_key_folder / "openai_key.json")
+#openai_key_folder = Path(__file__).resolve().parent.parent.parent / "openai_keys"
+#OPENAI_KEYS = load_json(openai_key_folder / "openai_key.json")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+
 @retry(tries=5, delay=60)
-def connect_openai(
+def connect_ollama(
     engine,
     messages,
     temperature,
@@ -25,17 +27,38 @@ def connect_openai(
     stop,
     response_format,
 ):
-    return openai.ChatCompletion.create(
-        model=engine,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        top_p=top_p,
-        frequency_penalty=frequency_penalty,
-        presence_penalty=presence_penalty,
-        # stop=stop,
-        response_format=response_format,
-    )
+    try:
+        # The translated ollama.chat() call
+        response = ollama.chat(
+            model=engine,
+            messages=messages,
+            format=response_format,
+            options={
+                'temperature': temperature,
+                'num_predict': max_tokens,
+                'top_p': top_p,
+                'frequency_penalty': frequency_penalty,
+                'presence_penalty': presence_penalty,
+            }
+        )
+        return response
+        """
+        # The response content will be a string, which can be parsed if it's in JSON format
+        print("Raw response content:")
+        print(response['message']['content'])
+
+        print("\nParsed JSON object:")
+        parsed_json = json.loads(response['message']['content'])
+        print(json.dumps(parsed_json, indent=2))
+        """
+
+    except ollama.ResponseError as e:
+        print(f"An error occurred: {e.error}")
+    except json.JSONDecodeError:
+        print("\nError: The model's output was not valid JSON.")
+
+    # TODO
+    #return ollama.chat(model=engine,messages=messages,temperature=temperature,max_tokens=max_tokens,top_p=top_p,frequency_penalty=frequency_penalty,presence_penalty=presence_penalty,# stop=stop,response_format=response_format,)
 
 
 class GPT_Chat:
@@ -58,14 +81,8 @@ class GPT_Chat:
         self.stop = stop
 
         # add key
-        openai.api_key = OPENAI_KEYS["key"]
-        if "org" in OPENAI_KEYS:
-            openai.organization = OPENAI_KEYS["org"]
-        if "proxy" in OPENAI_KEYS:
-            openai.proxy = {
-                "http": "http://" + OPENAI_KEYS["proxy"],
-                "https": "https://" + OPENAI_KEYS["proxy"],
-            }
+        # TODO: OLLAMA_HOST?
+        # self.OLLAMA_HOST = "http://localhost:11434"
 
     def get_response(
         self,
@@ -95,7 +112,7 @@ class GPT_Chat:
             try:
                 logger.info("[INFO] connecting to the LLM ...")
 
-                response = connect_openai(
+                response = connect_ollama(
                     engine=self.engine,
                     messages=messages,
                     temperature=temperature,
@@ -106,7 +123,7 @@ class GPT_Chat:
                     stop=self.stop,
                     response_format=response_format,
                 )
-                llm_output = response["choices"][0]["message"]["content"]
+                llm_output = response['message']['content']
                 conn_success = True
             except Exception as e:
                 logger.info(f"[ERROR] LLM error: {e}")
@@ -117,8 +134,8 @@ class GPT_Chat:
 
 class LLMBase(abc.ABC):
     def __init__(self, use_gpt_4: bool, *args, **kwargs):
-        engine = "gpt-4-0125-preview" if use_gpt_4 else "gpt-3.5-turbo"
-        # gpt-4-1106-preview
+        engine = "gemma3:4b"
+        # gpt-4-1106-preview, "gpt-4-0125-preview", "gpt-3.5-turbo"
         self.llm_gpt = GPT_Chat(engine=engine)
 
     def prompt_llm(self, prompt: str, temperature: float = 0.0, force_json: bool = False):
