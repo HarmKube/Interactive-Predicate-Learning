@@ -57,7 +57,7 @@ class CaPAgent:
             self._generate_function_prompt,
             fixed_vars,
             variable_vars,
-            use_gpt_4=self._agent_cfg.use_gpt_4,
+            use_gemma3=self._agent_cfg.use_gemma3,
         )
 
         # creating low-level LMPs
@@ -69,7 +69,7 @@ class CaPAgent:
             variable_vars,
             maintain_session=False,
             return_val_name="ret_objects",
-            use_gpt_4=self._agent_cfg.use_gpt_4,
+            use_gemma3=self._agent_cfg.use_gemma3,
         )
 
         variable_vars["execute_subpolicy"] = LMP(
@@ -79,7 +79,7 @@ class CaPAgent:
             fixed_vars,
             variable_vars,
             maintain_session=False,
-            use_gpt_4=self._agent_cfg.use_gpt_4,
+            use_gemma3=self._agent_cfg.use_gemma3,
         )
 
         # main policy LMP
@@ -90,7 +90,7 @@ class CaPAgent:
             fixed_vars,
             variable_vars,
             maintain_session=True,
-            use_gpt_4=self._agent_cfg.use_gpt_4,
+            use_gemma3=self._agent_cfg.use_gemma3,
         )
 
     def __str__(self):

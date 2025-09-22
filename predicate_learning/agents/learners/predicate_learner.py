@@ -47,9 +47,9 @@ class PredicateLearner(LLMBase):
         prompt_dir: str,
         example_predicate_prompt_file: str,
         perception_api_wrapper: PerceptionAPIWrapper,
-        use_gpt_4: bool = True,
+        use_gemma3: bool = True,
     ):
-        super().__init__(use_gpt_4=use_gpt_4)
+        super().__init__(use_gemma3=use_gemma3)
 
         # load prompt templates
         prompt_template_folder = Path(prompt_dir)

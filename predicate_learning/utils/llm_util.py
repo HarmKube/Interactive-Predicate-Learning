@@ -1,21 +1,17 @@
 from retry import retry
 from pathlib import Path
 from predicate_learning.utils.io_util import load_json
-#import openai
 import abc
 import logging
 import ollama
 import json
 
-#openai_key_folder = Path(__file__).resolve().parent.parent.parent / "openai_keys"
-#OPENAI_KEYS = load_json(openai_key_folder / "openai_key.json")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
 
-@retry(tries=5, delay=60)
 def connect_ollama(
     engine,
     messages,
@@ -29,8 +25,9 @@ def connect_ollama(
 ):
     try:
         # The translated ollama.chat() call
+        #logger.info(engine,stop,max_tokens,temperature,top_p,frequency_penalty,presence_penalty)
         response = ollama.chat(
-            model=engine,
+            model="gemma3:4b",
             messages=messages,
             format=response_format,
             options={
@@ -61,7 +58,7 @@ def connect_ollama(
     #return ollama.chat(model=engine,messages=messages,temperature=temperature,max_tokens=max_tokens,top_p=top_p,frequency_penalty=frequency_penalty,presence_penalty=presence_penalty,# stop=stop,response_format=response_format,)
 
 
-class GPT_Chat:
+class Gemma_Chat:
     def __init__(
         self,
         engine,
@@ -100,9 +97,9 @@ class GPT_Chat:
             messages = [{"role": "user", "content": prompt}]
 
         if force_json:
-            response_format = {"type": "json_object"}
+            response_format = 'json'
         else:
-            response_format = {"type": "text"}
+            response_format = ''
 
         n_retry = 0
         while not conn_success:
@@ -133,10 +130,10 @@ class GPT_Chat:
 
 
 class LLMBase(abc.ABC):
-    def __init__(self, use_gpt_4: bool, *args, **kwargs):
+    def __init__(self, use_gemma3: bool, *args, **kwargs):
         engine = "gemma3:4b"
         # gpt-4-1106-preview, "gpt-4-0125-preview", "gpt-3.5-turbo"
-        self.llm_gpt = GPT_Chat(engine=engine)
+        self.llm_gemma = Gemma_Chat(engine=engine)
 
     def prompt_llm(self, prompt: str, temperature: float = 0.0, force_json: bool = False):
         # feed prompt to llm
@@ -144,7 +141,7 @@ class LLMBase(abc.ABC):
         logger.debug(f"Prompt:\n{prompt}")
         messages = [{"role": "user", "content": prompt}]
 
-        conn_success, llm_output = self.llm_gpt.get_response(
+        conn_success, llm_output = self.llm_gemma.get_response(
             prompt=None,
             messages=messages,
             end_when_error=False,

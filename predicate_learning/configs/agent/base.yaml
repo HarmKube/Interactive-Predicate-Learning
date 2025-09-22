@@ -11,7 +11,7 @@ domain_dir: "predicate_learning/predicate_gym/domains"
 random_act_prob: 0.3
 
 # use gpt-4
-use_gpt_4: True
+use_gemma3: True
 
 # save demo traj
 save_demo_traj: False

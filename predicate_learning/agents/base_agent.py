@@ -43,7 +43,7 @@ class BaseAgent:
         self._train_planner = create_planner(
             agent_cfg.train_planner,
             action_predicates=self._action_predicates,
-            use_gpt_4=agent_cfg.use_gpt_4 if hasattr(agent_cfg, "use_gpt_4") else False,
+            use_gemma3=agent_cfg.use_gemma3 if hasattr(agent_cfg, "use_gemma3") else False,
             domain_desc=self._domain_desc,
             action_desc=self._action_desc,
         )
@@ -51,7 +51,7 @@ class BaseAgent:
         self._test_planner = create_planner(
             agent_cfg.test_planner,
             action_predicates=self._action_predicates,
-            use_gpt_4=agent_cfg.use_gpt_4 if hasattr(agent_cfg, "use_gpt_4") else False,
+            use_gemma3=agent_cfg.use_gemma3 if hasattr(agent_cfg, "use_gemma3") else False,
             domain_desc=self._domain_desc,
             action_desc=self._action_desc,
         )

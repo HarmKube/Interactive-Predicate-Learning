@@ -42,7 +42,7 @@ class LearnPDDLAgent(LearnPredicateAgent):
             prompt_dir=agent_cfg.prompt_dir,
             example_predicate_prompt_file=agent_cfg.example_predicate_prompt_file,
             perception_api_wrapper=self.perception_api_wrapper,
-            use_gpt_4=agent_cfg.use_gpt_4,
+            use_gemma3=agent_cfg.use_gemma3,
         )
 
         # learn from failure
